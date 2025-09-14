@@ -1,4 +1,4 @@
-Header header
+std_msgs/Header header
 
 # Range 0 to 1, 1 is max throttle
 float64 throttle

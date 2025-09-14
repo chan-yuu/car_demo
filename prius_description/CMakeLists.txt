@@ -1,8 +1,19 @@
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 3.5)
 project(prius_description)
 
-find_package(catkin REQUIRED)
+find_package(ament_cmake REQUIRED)
+find_package(xacro REQUIRED)
 
-catkin_package()
+ament_environment_hooks("${CMAKE_CURRENT_SOURCE_DIR}/env-hooks/gazebo_envs.sh.in")
 
-install(DIRECTORY meshes DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+
+install(
+  DIRECTORY meshes urdf
+  DESTINATION share/${PROJECT_NAME}
+)
+
+install(FILES model.config
+  DESTINATION share/${PROJECT_NAME}
+)
+
+ament_package()
