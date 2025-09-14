@@ -1083,7 +1083,7 @@ namespace gazebo_plugins
   /////////////////////////////////////////////////
   void PriusHybridPlugin::OnKeyPress(ConstAnyPtr &_msg)
   {
-    RCLCPP_INFO(this->impl_->ros_node_->get_logger(), "Got key [%s]", *_msg);
+    RCLCPP_INFO(this->impl_->ros_node_->get_logger(), "Got key [%d]", *_msg->string_value().c_str());
     this->KeyControl(_msg->int_value());
   }
   /////////////////////////////////////////////////

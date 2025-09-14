@@ -8,7 +8,7 @@ from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-
+from launch.conditions import IfCondition
 
 def generate_launch_description():
 
@@ -43,6 +43,10 @@ def generate_launch_description():
             'frame',
             default_value='base_link',
             description='The fixed frame to be used in RViz'),
+        DeclareLaunchArgument(
+                "use_rviz",
+                default_value="true",
+                description="Open RViz with the simulation"),
 
         Node(
             package="robot_state_publisher",
@@ -63,6 +67,7 @@ def generate_launch_description():
                 "--fixed-frame", LaunchConfiguration(variable_name="frame")
             ],
             output="screen",
+            condition=IfCondition(LaunchConfiguration("use_rviz"))
         ),
 
         Node(
