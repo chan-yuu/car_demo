@@ -1,168 +1,122 @@
-# Ackermann Autonomous Car Simulation
+# AUTONOMOUS VEHICLE: CONTROL AND BEHAVIOUR
 
-## → Requirements
+<p align="center"><b>AutoCarROS has migrated to ROS 2 Foxy Fitzroy</b></p>
 
-Before building and running the package, install the necessary dependencies using the `$ROS_DISTRO` environment variable:
+<div align="center">
+    <img src="https://github.com/winstxnhdw/AutoCarROS/blob/master/resources/pictures/ngeeann_av_ultrawide.png?raw=true" />
+</div>
 
-```python
-sudo apt-get install libeigen3-dev
-sudo apt install ros-$ROS_DISTRO-joint-state-publisher-gui
-sudo apt install ros-$ROS_DISTRO-xacro
-sudo apt install ros-$ROS_DISTRO-gazebo-ros-pkgs
-sudo apt install ros-$ROS_DISTRO-ros2-control ros-$ROS_DISTRO-ros2-controllers
-sudo apt install ros-$ROS_DISTRO-controller-manager
+## Abstract
+
+This project contains the ROS 2 variant of the [AutoCarROS](https://github.com/winstxnhdw/AutoCarROS) repository. It is a template for the development of a robust non-holonomic autonomous vehicle platform in a simulated environment using ROS 2 and Gazebo 11.
+> The following GIF demonstrates a simulation built on top of AutoCarROS 2.
+
+<div align="center">
+    <img src="resources/reactive_path_planning.gif" />
+</div>
+
+## Installation
+
+Create a workspace
+
+```bash
+$ mkdir -p PATH/TO/WORKSPACE/src
+$ cd src
 ```
 
-### → Step 1: Create a ROS2 Workspace
+Clone the repository.
 
-1. Open a terminal and **Set up ROS2**.
-    
-    ```bash
-    source /opt/ros/foxy/setup.bash #for ros2 foxy
-    source /opt/ros/humble/setup.bash #for ro2 humble
-    ```
-    
-2. Create a directory for the workspace and navigate into it:
-    
-    ```bash
-    mkdir -p ~/ros2_ws/src
-    cd ~/ros2_ws
-    ```
-    
+```bash
+$ git clone https://github.com/winstxnhdw/AutoCarROS2.git
+$ cd PATH/TO/WORKSPACE/src/AutoCarROS2
+```
 
-### → Step 2: Clone the GitHub Repository
+Install ROS 2 **and** the required dependencies.
 
-1. Navigate to the `src` directory:
-    
-    ```bash
-    cd ~/ros2_ws/src
-    ```
-    
-2. Clone the repository:
-    
-    ```
-    git clone https://github.com/armando-genis/Ackermann-Autonomous-Car-Simulation.git
-    ```
-    
+```bash
+sh ros-foxy-desktop-full-install.sh
+```
 
-### → Step 3: Build the Package
+If you only need to install the required dependencies, run the following. Otherwise, skip this step.
 
-1. Go back to the root of the workspace:
-    
-    ```bash
-    cd ~/ros2_ws
-    ```
-    
-2. Build the package:
-    
-    ```bash
-    colcon build --packages-select niagara_model
-    colcon build --packages-select velodyne_gazebo_plugins
-    colcon build --packages-select waypoints_niagara_creator
-    colcon build --packages-select waypoints_niagara_loader
-    colcon build --packages-select waypoints_calculations
-    ```
-    
-3. Source the workspace:
-    
-    ```bash
-    source install/setup.bash
-    ```
-    
+```bash
+sh requirements.sh
+```
 
-### → Step 4: Run the Simulation
+Build the packages.
 
-1. To launch with Gazebo and Rviz:
-    
-    ```bash
-    ros2 launch niagara_model display.launch.py
-    ```
-    
-2. To launch with only Rviz:
-    
-    ```bash
-    ros2 launch niagara_model display_gui.launch.py
-    ```
-    
+```bash
+$ cd PATH/TO/WORKSPACE/
+$ colcon build
+```
 
-### → Step 6: Moving the Car with `cmd_vel`
+Append the workspace to .bashrc.
 
-1. You can manually move the car using the `cmd_vel` command in the terminal. This command publishes velocity messages to control the car's movement:
-    
-    ```bash
-    ros2 topic pub /cmd_vel geometry_msgs/Twist '{linear: {x: 1.0, y: 0.0, z: 0.0}, angular: {x: 0.0, y: 0.0, z: 0.5}}'
-    ```
-    
-    - Replace the values in `{linear: {x: ...}}` and `{angular: {z: ...}}` to adjust the car's speed and direction:
-        - `linear.x`: Controls forward and backward motion (positive values move forward, negative values move backward).
-        - `angular.z`: Controls the turning rate (positive values turn left, negative values turn right).
+```bash
+$ echo "source PATH/TO/WORKSPACE/install/setup.bash" >> ~/.bashrc
+$ source ~/.bashrc
+```
 
-### → Step 7: Run the Waypoints Creator
+## Usage
 
-1. Launch the waypoints creation node:
-    
-    ```bash
-    ros2 launch waypoints_niagara_creator waypoints.launch.py
-    ```
-    
-    ### → Explanation of the Waypoints Creator
-    
-    - This tool uses the car's odometry data to generate waypoints along the car's path. It continuously tracks the vehicle's position and stores coordinates as waypoints, which can later be used for navigation and simulation purposes.
-    - **Adjusting Waypoints Iteration:** You can control the iteration (spacing) of the waypoints by modifying the `interval_interval_` variable in the source code. Changing this variable allows you to create more or fewer waypoints, depending on how detailed you want the path to be.
-    - By default, the waypoints are saved in a CSV file. In the source code (line 52), the file path is defined as:
-        
-        ```cpp
-        std::string file_path_ = "/home/genis/Music/wp.csv";
-        ```
-        
+When using this project for the first time, it is necessary that the user builds the packages before attempting to run the launch files.
 
-### Step 8: Run the Waypoints Loader
+```bash
+# Change directory to your desired workspace
+cd PATH/TO/WORKSPACE/
 
-1. Launch the waypoints loader node:
-    
-    ```bash
-    ros2 launch waypoints_niagara_loader waypointsLoader.launch.py
-    ```
-    
-    ### → Explanation of the Waypoints Loader
-    
-    - The Waypoints Loader reads the path from a CSV file (previously created by the Waypoints Creator) and publishes it. This path can then be used for various purposes, such as processing the trajectory data or visualizing the path in Rviz2.
-    - In the source code (approximately line 49), the path to the CSV file is set as follows:
-        
-        ```cpp
-        std::string file_path_ = "/home/genis/Music/wp.csv";
-        ```
-        
-    - **Make sure to change this path** to the location where your CSV file is stored. Update it to match a valid directory on your system before running the loader. This step is crucial for successfully loading the waypoints.
+# Build packages
+$ colcon build
+```
 
-### →Step 2: Run the Waypoints Calculations
+There are two launch files the user can use. More details in the [Launch Files](#Launch-Files) section.
 
-1. Launch the waypoints calculations node:
-    
-    ```bash
-    ros2 launch waypoints_calculations calculation.launch.py
-    ```
-    
-    ### → Explanation of the Waypoints Calculations
-    
-    - This package uses the car's **odometry** data and the pre-defined **path** to calculate a "lookahead" point. The lookahead point is a target on the path that the car will try to reach as it moves forward. This approach ensures smoother and more accurate path-following.
-    
-    ### → Configuration File Parameters
-    
-    The Waypoints Calculations package uses a configuration YAML file with parameters that define how the calculations are performed:
-    
-    ```yaml
-    yaml
-    Copiar código
-    waypoints_calculations:
-      ros__parameters:
-        lookahead_min: 2.0
-        lookahead_max: 5.0
-        mps_alpha: 1.0
-        mps_beta: 3.5
-    
-    ```
-    
-    - **`lookahead_min`**: The minimum lookahead distance for the car while following the path.
-    - **`lookahead_max`**: The maximum lookahead distance, which limits how far ahead the car will consider waypoints.
-    - **`mps_alpha`** and **`mps_beta`**: Parameters used for speed and steering calculations, affecting how the car navigates through the waypoints.
+```bash
+# Launch the default launch file
+$ ros2 launch launches default_launch.py
+
+# OR
+
+# Launch the interactive launch file
+$ ros2 launch launches click_launch.py
+```
+
+## Launch Files
+
+|Launch File|Purpose|
+|-----------|-------|
+|`default_launch.py`|Complete pipeline with preset waypoints|
+|`click_launch.py`|Interactive pipeline for testing and fun|
+
+## Packages
+
+|Package|Purpose|
+|-----------|-------|
+|`launches`|Contains the main launch files for quick launching|
+|`autocar_description`|Contains the model's URDF and RViz configuration files|
+|`autocar_gazebo`|Contains the world files and model's SDF|
+|`autocar_map`|Contains the Bayesian Occupancy Filter stack|
+|`autocar_msgs`|Contains all custom messages used throughout every package|
+|`autocar_nav`|Contains the navigation stack|
+
+## Troubleshoot
+
+There are occasions where `colcon build` does not properly rebuild the 'build' and 'install' folders, especially when one has made changes to the `CMakeLists.txt`. In the following, a simple quick fix can be performed.
+
+```bash
+# Remove build and install files
+$ cd PATH/TO/WORKSPACE/
+$ rm -rf build install
+```
+
+## Renders
+
+<p align="center"><b>"Because the layman doesn't care unless it looks cool."</b></p>
+
+<div align="center">
+    <img src="https://github.com/winstxnhdw/AutoCarROS/blob/master/resources/gifs/renders.gif?raw=true" />
+    <img src="https://github.com/winstxnhdw/AutoCarROS/blob/master/resources/gifs/1.gif?raw=true" />
+    <img src="https://github.com/winstxnhdw/AutoCarROS/blob/master/resources/gifs/2.gif?raw=true" />
+    <img src="https://github.com/winstxnhdw/AutoCarROS/blob/master/resources/gifs/3.gif?raw=true" />
+    <img src="https://github.com/winstxnhdw/AutoCarROS/blob/master/resources/gifs/4.gif?raw=true" />
+</div>
