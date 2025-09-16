@@ -1,122 +1,119 @@
-# AUTONOMOUS VEHICLE: CONTROL AND BEHAVIOUR
+# Round Bot
+This package contains creating 2d costmap and 3d costmap using STVL(Spatio Temporal Vortex Layer) for the navigation implemented on the round_bot in the simulation.
 
-<p align="center"><b>AutoCarROS has migrated to ROS 2 Foxy Fitzroy</b></p>
+## Requirements
+* Ubuntu - 22.04
+* ROS2 - Humble
 
-<div align="center">
-    <img src="https://github.com/winstxnhdw/AutoCarROS/blob/master/resources/pictures/ngeeann_av_ultrawide.png?raw=true" />
-</div>
+### Workflow for the 2d costmap and navigation
 
-## Abstract
+![gif_example](https://github.com/Vasanth28897/round_bot/blob/humble_gazebo_classic/docs/gifs/2d_costmap_navigation.gif)
 
-This project contains the ROS 2 variant of the [AutoCarROS](https://github.com/winstxnhdw/AutoCarROS) repository. It is a template for the development of a robust non-holonomic autonomous vehicle platform in a simulated environment using ROS 2 and Gazebo 11.
-> The following GIF demonstrates a simulation built on top of AutoCarROS 2.
+* To drive and play with the round_bot, launch this command
 
-<div align="center">
-    <img src="resources/reactive_path_planning.gif" />
-</div>
+    ```bash
+    ros2 launch round_bot bringup_launch.py
+    
+    ```
 
-## Installation
+* Drive the round_bot using this command in the terminal
 
-Create a workspace
+    ```bash
+    ros2 run teleop_twist_keyboard teleop_twist_keyboard
+    
+    ```
 
-```bash
-$ mkdir -p PATH/TO/WORKSPACE/src
-$ cd src
-```
+* To generate a slam, use this command(use the teleop_twist_keyboard to drive and map the environment)
 
-Clone the repository.
+    ```bash
+    ros2 launch round_bot slam_launch.py
+    
+    ```
 
-```bash
-$ git clone https://github.com/winstxnhdw/AutoCarROS2.git
-$ cd PATH/TO/WORKSPACE/src/AutoCarROS2
-```
+* Use this command to save the map file after map is generated
 
-Install ROS 2 **and** the required dependencies.
+    ```bash
+    ros2 run nav2_map_server map_saver_cli -f map_folder/map_file_name
+    
+    ```
 
-```bash
-sh ros-foxy-desktop-full-install.sh
-```
 
-If you only need to install the required dependencies, run the following. Otherwise, skip this step.
+* To make the round_bot go autonomously, use this below command (Note : Don't forget to add the map_filename.yaml file in the navigation_launch.py file)
 
-```bash
-sh requirements.sh
-```
+    ```bash
+    ros2 launch round_bot navigation_launch.py
+    
+    ```
 
-Build the packages.
+    the round bot localize automatically, you can send the goal using  `2d_goal` in the rviz, or you can send the `send_goal` command like this below in another terminal
 
-```bash
-$ cd PATH/TO/WORKSPACE/
-$ colcon build
-```
+    ```bash
+    ros2 action send_goal /navigate_to_pose nav2_msgs/action/NavigateToPose "{pose: {header: {stamp: {sec: 0, nanosec: 0}, frame_id: 'map'}, pose: {position: {x: 3.0, y: 3.0, z: 0.0}, orientation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}}}}"
+    
+    ```
 
-Append the workspace to .bashrc.
 
-```bash
-$ echo "source PATH/TO/WORKSPACE/install/setup.bash" >> ~/.bashrc
-$ source ~/.bashrc
-```
+### Workflow for the 3d costmap and navigation 
 
-## Usage
+Available Plug&Play Setups 
+--------------------------
+### STVL Observation Sources
+I used two different sensors to build the voxel grid in this package: 3D LiDAR and a depth camera(mounted in the front of the round bot).
 
-When using this project for the first time, it is necessary that the user builds the packages before attempting to run the launch files.
+* To drive and play with the round_bot, launch this command
 
-```bash
-# Change directory to your desired workspace
-cd PATH/TO/WORKSPACE/
+    ```bash
+    ros2 launch round_bot bringup_with_depth_camera_and_3d_lidar_launch.
+    
+    ```
 
-# Build packages
-$ colcon build
-```
+* Drive the round_bot using this command in the terminal
 
-There are two launch files the user can use. More details in the [Launch Files](#Launch-Files) section.
+    ```bash
+    ros2 run teleop_twist_keyboard teleop_twist_keyboard
+    
+    ```
 
-```bash
-# Launch the default launch file
-$ ros2 launch launches default_launch.py
+* To generate a slam, use this command(use the teleop_twist_keyboard to drive and map the environment)
 
-# OR
+    ```bash
+    ros2 launch round_bot slam_with_depth_camera_and_3d_lidar_launch.py
+    
+    ```
 
-# Launch the interactive launch file
-$ ros2 launch launches click_launch.py
-```
+* Use this command to save the map file after map is generated
 
-## Launch Files
+    ```bash
+    ros2 run nav2_map_server map_saver_cli -f map_folder/map_file_name
+    
+    ```
 
-|Launch File|Purpose|
-|-----------|-------|
-|`default_launch.py`|Complete pipeline with preset waypoints|
-|`click_launch.py`|Interactive pipeline for testing and fun|
 
-## Packages
+* To make the round_bot go autonomously, use this below command (Note : Don't forget to add the map_filename.yaml file in the navigation_launch.py file).
+* If you want to use the 3d_lidar for the voxel grid, change the `SENSOR` name as `3d_lidar` or if you want to use the depth_camera for the voxel grid change the `SENSOR` name as `camera` in the `navigation_with_stvl_launch.py` file.
 
-|Package|Purpose|
-|-----------|-------|
-|`launches`|Contains the main launch files for quick launching|
-|`autocar_description`|Contains the model's URDF and RViz configuration files|
-|`autocar_gazebo`|Contains the world files and model's SDF|
-|`autocar_map`|Contains the Bayesian Occupancy Filter stack|
-|`autocar_msgs`|Contains all custom messages used throughout every package|
-|`autocar_nav`|Contains the navigation stack|
+stvl with 3d_lidar
 
-## Troubleshoot
+![gif_example](https://github.com/Vasanth28897/round_bot/blob/humble_gazebo_classic/docs/gifs/3d_costmap_navigation_with_3d_lidar.gif)
 
-There are occasions where `colcon build` does not properly rebuild the 'build' and 'install' folders, especially when one has made changes to the `CMakeLists.txt`. In the following, a simple quick fix can be performed.
+stvl with camera
 
-```bash
-# Remove build and install files
-$ cd PATH/TO/WORKSPACE/
-$ rm -rf build install
-```
+![gif_example](https://github.com/Vasanth28897/round_bot/blob/humble_gazebo_classic/docs/gifs/3d_costmap_navigation_with_camera.gif)
 
-## Renders
+ 
+    ```bash
+    ros2 launch round_bot navigation_with_stvl_launch.py
+    ```
 
-<p align="center"><b>"Because the layman doesn't care unless it looks cool."</b></p>
+the round bot localize automatically, you can send the goal using  `2d_goal` in the rviz, or you can send the `send_goal` command like this below in another terminal
 
-<div align="center">
-    <img src="https://github.com/winstxnhdw/AutoCarROS/blob/master/resources/gifs/renders.gif?raw=true" />
-    <img src="https://github.com/winstxnhdw/AutoCarROS/blob/master/resources/gifs/1.gif?raw=true" />
-    <img src="https://github.com/winstxnhdw/AutoCarROS/blob/master/resources/gifs/2.gif?raw=true" />
-    <img src="https://github.com/winstxnhdw/AutoCarROS/blob/master/resources/gifs/3.gif?raw=true" />
-    <img src="https://github.com/winstxnhdw/AutoCarROS/blob/master/resources/gifs/4.gif?raw=true" />
-</div>
+    ```bash
+    ros2 action send_goal /navigate_to_pose nav2_msgs/action/NavigateToPose "{pose: {header: {stamp: {sec: 0, nanosec: 0}, frame_id: 'map'}, pose: {position: {x: 3.0, y: 3.0, z: 0.0}, orientation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}}}}"
+    
+    ```
+
+
+## References
+* [Spatio-Temporal Voxel Layer](https://github.com/SteveMacenski/spatio_temporal_voxel_layer) GitHub repository
+
+* [ros2-navigations-stvl](https://github.com/mich-pest/ros2_navigation_stvl) Github repository.
