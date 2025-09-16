@@ -25,13 +25,14 @@ endif()
 
 install(
   DIRECTORY 
-    launch 
-    description 
-    rviz 
     config
-    worlds
-    maps
+    description
+    docker
+    launch 
+    maps 
+    rviz 
     src
+    worlds
   DESTINATION 
     share/${PROJECT_NAME}
 )

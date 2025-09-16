@@ -17,8 +17,9 @@
   <depend>visualization_msgs</depend>
   <depend>controller_manager</depend>
 
-  <depend>gazebo_ros</depend>
-  <depend>gazebo_plugins</depend>
+  <depend>ros_gz_bridge</depend>
+  <depend>ros_gz_image</depend>
+  <depend>ros_gz_sim</depend>
 
   <depend>rviz2</depend>
   <depend>robot_state_publisher</depend>

@@ -47,6 +47,7 @@
   <link name="left_wheel">
     <visual>
       <geometry>
+        <!-- <cylinder radius="0.08" length="0.05"/> -->
         <cylinder radius="${wheel_radius}" length="${wheel_length}"/>
       </geometry>
       <material name = "Red">
@@ -78,6 +79,7 @@
   <link name="right_wheel">
     <visual>
       <geometry>
+        <!-- <cylinder radius="0.08" length="0.05"/> -->
         <cylinder radius="${wheel_radius}" length="${wheel_length}"/>
       </geometry>
       <material name = "Red">
@@ -112,6 +114,7 @@
   <link name="front_caster_link">
     <visual>                     
       <geometry>
+        <!-- <sphere radius="0.05"/> -->
         <sphere radius="${caster_radius}"/>
       </geometry>
       <material name="Red">
@@ -145,6 +148,7 @@
   <link name="back_caster_link">
     <visual>                     
       <geometry>
+        <!-- <sphere radius="0.05"/> -->
         <sphere radius="${caster_radius}"/>
       </geometry>
       <material name="Red">
@@ -176,6 +180,7 @@
   <link name="mount_link">
     <visual>                     
       <geometry>
+        <!-- <cylinder radius="0.08" length="0.05"/> -->
         <cylinder radius="${mount_radius}" length="${mount_length}"/>
       </geometry>
       <material name="Black">
@@ -225,25 +230,39 @@
 
   <!-- camera -->
   <gazebo reference="camera_link">
-    <material>Gazebo/Blue</material>
+    <material> Gazebo/Blue</material>
     <sensor type="camera" name="camera">
-      <update_rate>10.0</update_rate>
+      <update_rate>50.0</update_rate>
       <camera name="head">
+        <camera_info_topic>camera/camera_info</camera_info_topic>
           <horizontal_fov>1.3962634</horizontal_fov>
           <image>
             <width>640</width>
             <height>480</height>
             <format>R8G8B8</format>
+            <!-- <format>B8G8R8</format> -->
           </image>
           <clip>
             <near>0.05</near>
             <far>8.0</far>
           </clip>
       </camera>
-      <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+      <!-- <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
         <alwaysOn>true</alwaysOn>
         <frameName>camera_link_optical</frameName>
-      </plugin>
+        <min_depth>0.1</min_depth>
+        <max_depth>100.0</max_depth>
+        <cameraName>head</cameraName>
+        <imageTopicName>/camera/image_raw</imageTopicName>
+        <cameraInfoTopicName>/camera/camera_info</cameraInfoTopicName>
+        <depthImageTopicName>/camera/depth/image_raw</depthImageTopicName>
+        <depthImageCameraInfoTopicName>/camera/depth/camera_info</depthImageCameraInfoTopicName>
+        <pointCloudTopicName>/camera/depth/points</pointCloudTopicName>
+        <pointCloudCutoff>0.05</pointCloudCutoff>
+        <pointCloudCutoffMax>8.0</pointCloudCutoffMax>
+      </plugin> -->
+      <topic>camera/image_raw</topic>
+      <gz_frame_id>camera_link_optical</gz_frame_id>
     </sensor>
   </gazebo>
 
@@ -274,12 +293,12 @@
   </joint>
 
   <gazebo reference="lidar_link">
-    <material>Gazebo/Red</material>
-      <sensor name="block_laser_sensor" type="ray">
+    <material> Gazebo/Red</material>
+      <sensor name="block_laser_sensor" type="gpu_lidar">
       <pose> 0 0 0 0 0 0 </pose>
       <visualize>true</visualize>
       <update_rate>10.0</update_rate>
-      <ray>
+      <lidar>
         <scan>
           <horizontal>
             <samples>360</samples>
@@ -290,7 +309,7 @@
         </scan>
         <range>
           <min>0.3</min>
-          <max>2.5</max>
+          <max>7.5</max>
           <resolution>0.1</resolution>
         </range>
         <noise>
@@ -298,32 +317,43 @@
           <mean>0.0</mean>
           <stddev>0.01</stddev>
         </noise>
-      </ray>
-      <plugin name="gazebo_ros_block_laser_controller" filename="libgazebo_ros_ray_sensor.so">
+      </lidar>
+      <!-- <plugin name="gazebo_ros_block_laser_controller" filename="libgazebo_ros_ray_sensor.so">
         <ros>
           <remapping>~/out:=scan</remapping>
         </ros>
         <output_type>sensor_msgs/LaserScan</output_type>
         <frame_name>lidar_link</frame_name>
-      </plugin>
+      </plugin> -->
+      <topic>scan</topic>
+      <gz_frame_id>lidar_link</gz_frame_id>
     </sensor>
   </gazebo>
 
   <gazebo>
-    <plugin name='diff_drive' filename='libgazebo_ros_diff_drive.so'>
-      <update_rate>10</update_rate>
+    <plugin name='gz::sim::systems::DiffDrive' filename='gz-sim-diff-drive-system'>
+      <update_rate>50</update_rate>
       <left_joint>left_wheel_joint</left_joint>
       <right_joint>right_wheel_joint</right_joint>
       <wheel_separation>0.36</wheel_separation>
-      <wheel_diameter>0.16</wheel_diameter>
+      <wheel_radius>0.08</wheel_radius>
       <max_wheel_torque>10</max_wheel_torque>
-      <max_wheel_acceleration>1.0</max_wheel_acceleration>
-      <publish_odom>true</publish_odom>
-      <publish_odom_tf>true</publish_odom_tf>
-      <publish_wheel_tf>true</publish_wheel_tf>
-      <odometry_source>1</odometry_source>
-      <odometry_frame>odom</odometry_frame>
-      <robot_base_frame>base_footprint</robot_base_frame>
+      <max_linear_acceleration>10.0</max_linear_acceleration>
+      <max_angular_acceleration>3.0</max_angular_acceleration>
+      <frame_id>odom</frame_id>
+      <child_frame_id>base_footprint</child_frame_id>
+      <odom_topic>odom</odom_topic>
+      <odom_publisher_frequency>150</odom_publisher_frequency>
+      <tf_topic>/tf</tf_topic>
+      <topic>cmd_vel</topic>
     </plugin>
-  </gazebo>  
+
+    <plugin filename="gz-sim-joint-state-publisher-system"
+      name="gz::sim::systems::JointStatePublisher">
+      <topic>joint_states</topic>
+      <joint_name>left_wheel_joint</joint_name>
+      <joint_name>right_wheel_joint</joint_name>
+    </plugin>
+  </gazebo> 
+
 </robot>
